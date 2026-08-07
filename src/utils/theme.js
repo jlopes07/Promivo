@@ -1,38 +1,47 @@
-const THEME_KEY = 'promivo_theme';
+const THEME_KEY = 'promivo_theme_manual';
+
+export function getSystemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
 export function initTheme() {
-  const savedTheme = localStorage.getItem(THEME_KEY);
-  if (savedTheme) {
-    setTheme(savedTheme);
+  const savedManualTheme = localStorage.getItem(THEME_KEY);
+  
+  if (savedManualTheme) {
+    applyTheme(savedManualTheme);
   } else {
-    // Detect OS preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(prefersDark ? 'dark' : 'light');
+    // Follow browser/OS setting dynamically
+    applyTheme(getSystemTheme());
   }
 
-  // Listen for OS theme changes if user hasn't explicitly set a preference
+  // Listen for browser/system theme changes dynamically
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    // Only auto-update if the user has NOT manually set a preference
     if (!localStorage.getItem(THEME_KEY)) {
-      setTheme(e.matches ? 'dark' : 'light');
+      applyTheme(e.matches ? 'dark' : 'light');
     }
   });
 }
 
-export function setTheme(themeName) {
+export function applyTheme(themeName) {
   document.documentElement.setAttribute('data-theme', themeName);
-  localStorage.setItem(THEME_KEY, themeName);
   updateToggleIcon(themeName);
 }
 
+export function setTheme(themeName) {
+  localStorage.setItem(THEME_KEY, themeName);
+  applyTheme(themeName);
+}
+
 export function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const currentTheme = document.documentElement.getAttribute('data-theme') || getSystemTheme();
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   setTheme(newTheme);
   return newTheme;
 }
 
 export function getCurrentTheme() {
-  return document.documentElement.getAttribute('data-theme') || 'light';
+  return document.documentElement.getAttribute('data-theme') || getSystemTheme();
 }
 
 function updateToggleIcon(theme) {
@@ -63,3 +72,4 @@ function updateToggleIcon(theme) {
     toggleBtn.setAttribute('title', 'Mudar para modo escuro');
   }
 }
+
