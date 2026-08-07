@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- SEO Meta Tags -->
+  <title>Promivo - O Melhor Comparador de Ofertas e Descontos Online</title>
+  <meta name="description" content="Encontre as melhores ofertas, cupons de desconto e promoções de suplementos, eletrônicos, games, livros, mercado e muito mais no Promivo." />
+  <meta name="keywords" content="ofertas, promoções, cupons de desconto, comparador de preços, achadinhos, suplementos, games" />
+  <meta name="robots" content="index, follow" />
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Promivo - Comparador de Ofertas & Promoções" />
+  <meta property="og:description" content="Monitoramento em tempo real das melhores promoções da internet com cupons de desconto." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200" />
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'/></svg>" />
+  
+  <!-- Main Stylesheets -->
+  <link rel="stylesheet" href="/src/styles/main.css" />
+  <link rel="stylesheet" href="/src/styles/theme.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/utilities.css" />
+</head>
+<body>
+  <!-- Global App Header -->
+  <header id="appHeader"></header>
+
+  <main class="app-container" style="flex: 1;">
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <h1 class="hero-title">Encontre as melhores ofertas em um só lugar</h1>
+      <p class="hero-subtitle">
+        Monitoramos os maiores marketplaces diariamente para trazer descontos reais, cupons exclusivos e preços imbatíveis.
+      </p>
+    </section>
+
+    <!-- Categories Filter Bar -->
+    <section id="categoriesBar"></section>
+
+    <!-- Main Content Section Header -->
+    <section class="section-header">
+      <h2 id="offersSectionTitle" class="section-title">Todas as Ofertas</h2>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <label for="sortSelect" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Ordenar por:</label>
+        <select id="sortSelect" class="sort-select">
+          <option value="newest">Mais recentes</option>
+          <option value="discount">Maior desconto</option>
+          <option value="price-asc">Menor preço</option>
+          <option value="price-desc">Maior preço</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Product Grid -->
+    <section id="offersGrid" class="offers-grid">
+      <!-- Cards rendered dynamically -->
+    </section>
+  </main>
+
+  <!-- SEO Footer -->
+  <footer class="footer">
+    <div class="app-container">
+      <p>© 2026 Promivo. Todos os direitos reservados. Monitorador e Comparador de Ofertas Online.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

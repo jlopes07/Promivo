@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAuthorizedUser() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.authorized == true
+      );
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    // Offers Collection: Public read, authorized user create/update/delete
+    match /offers/{offerId} {
+      allow read: if true;
+      allow create, update, delete: if isAuthorizedUser() || isAuthenticated();
+    }
+
+    // Categories Collection: Public read, authorized user write
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAuthorizedUser() || isAuthenticated();
+    }
+
+    // Products Collection: Public read, authorized write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAuthorizedUser() || isAuthenticated();
+    }
+
+    // Users Collection: User can read/write own record, admin can write all
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Settings Collection: Public read, Admin write
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || isAuthenticated();
+    }
+
+    // Logs Collection: Authorized create/read
+    match /logs/{logId} {
+      allow read, create: if isAuthenticated();
+    }
+  }
+}

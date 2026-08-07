@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Afiliados - Promivo</title>
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'/></svg>" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/src/styles/main.css" />
+  <link rel="stylesheet" href="/src/styles/theme.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/utilities.css" />
+</head>
+<body>
+  <!-- Header for Panel -->
+  <header id="panelHeader"></header>
+
+  <main class="app-container" style="flex: 1;">
+    <!-- Auth Section (Hidden when logged in) -->
+    <div id="authSection" style="max-width: 420px; margin: 4rem auto; display: none;">
+      <div class="panel-card" style="text-align: center;">
+        <div class="logo-icon" style="margin: 0 auto 1.25rem; width: 3rem; height: 3rem;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">Área Restrita</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Acesso exclusivo para divulgadores autorizados Promivo.
+        </p>
+
+        <form id="loginForm">
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label" for="loginEmail">E-mail Autorizado</label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="seu-email@exemplo.com" required />
+          </div>
+
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label" for="loginPassword">Senha</label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required />
+          </div>
+
+          <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+            Entrar no Painel
+          </button>
+        </form>
+
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1.25rem;">
+          Sem cadastro público. Usuários são gerenciados pelo administrador.
+        </p>
+      </div>
+    </div>
+
+    <!-- Main Affiliate Dashboard (Hidden until logged in) -->
+    <div id="dashboardSection" class="affiliate-dashboard" style="display: none;">
+      <div class="panel-header">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em;">Ferramenta de Criação & Divulgação</h1>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">Cadastre ofertas e gere cópias otimizadas para redes sociais em tempo real.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span id="userEmailBadge" style="font-size: 0.85rem; font-weight: 600; color: var(--brand-primary); background: var(--brand-light); padding: 0.35rem 0.75rem; border-radius: var(--radius-full);"></span>
+          <button id="btnLogout" class="btn btn-sm btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Sair
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-grid">
+        <!-- Left Column: Offer Form -->
+        <div>
+          <div class="panel-card">
+            <h3 class="panel-card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              Dados do Produto & Oferta
+            </h3>
+
+            <form id="offerForm">
+              <div class="form-group">
+                <label class="form-label" for="offerName">Nome do Produto *</label>
+                <input type="text" id="offerName" class="form-control" placeholder="Ex: Whey Protein Concentrado 1kg Growth" required />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="offerCategory">Categoria *</label>
+                  <select id="offerCategory" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="offerStore">Loja Online *</label>
+                  <input type="text" id="offerStore" class="form-control" placeholder="Ex: Amazon, Shopee, Mercado Livre" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="offerCurrentPrice">Preço Atual (R$) *</label>
+                  <input type="number" step="0.01" id="offerCurrentPrice" class="form-control" placeholder="99.90" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="offerOldPrice">Preço Anterior (R$)</label>
+                  <input type="number" step="0.01" id="offerOldPrice" class="form-control" placeholder="149.90 (opcional)" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="offerAffiliateLink">Link de Afiliado (Exclusivo) *</label>
+                <input type="url" id="offerAffiliateLink" class="form-control" placeholder="https://amzn.to/exemplo ou seu link de afiliado" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="offerProductLink">Link Original do Produto (Opcional)</label>
+                <input type="url" id="offerProductLink" class="form-control" placeholder="https://loja.com/produto" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="offerCoupon">Cupom de Desconto</label>
+                  <input type="text" id="offerCoupon" class="form-control" placeholder="Ex: PROMO10 (opcional)" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="offerShipping">Frete</label>
+                  <input type="text" id="offerShipping" class="form-control" placeholder="Ex: Frete Grátis Prime (opcional)" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="offerImageUrl">URL da Imagem do Produto</label>
+                <input type="url" id="offerImageUrl" class="form-control" placeholder="https://imagens.com/produto.jpg" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="offerNotes">Observações</label>
+                <textarea id="offerNotes" class="form-control" placeholder="Ex: Válido somente para membros Prime ou via App"></textarea>
+              </div>
+
+              <button type="submit" id="btnPublishOffer" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                🚀 Publicar Oferta no Promivo
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Column: Auto Copy Generator -->
+        <div id="copyToolContainer"></div>
+      </div>
+
+      <!-- Published Offers Table Section -->
+      <section style="margin-top: 3rem;">
+        <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;">Minhas Ofertas Cadastradas</h2>
+        <div class="panel-card" style="padding: 0; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); background-color: var(--bg-surface-hover); color: var(--text-secondary);">
+                <th style="padding: 0.85rem 1rem;">Produto</th>
+                <th style="padding: 0.85rem 1rem;">Categoria</th>
+                <th style="padding: 0.85rem 1rem;">Loja</th>
+                <th style="padding: 0.85rem 1rem;">Preço</th>
+                <th style="padding: 0.85rem 1rem;">Status</th>
+                <th style="padding: 0.85rem 1rem; text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="panelOffersTable">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/src/pages/affiliatePanel.js"></script>
+</body>
+</html>
