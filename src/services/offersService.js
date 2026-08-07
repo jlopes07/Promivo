@@ -1,3 +1,4 @@
+import { ApiService } from './apiService.js';
 import { db } from '../firebase/config.js';
 import { 
   collection, 
@@ -6,14 +7,35 @@ import {
   updateDoc, 
   deleteDoc, 
   doc, 
-  query, 
-  where, 
-  orderBy, 
   serverTimestamp 
 } from 'firebase/firestore';
 import { calculateDiscount } from '../utils/formatters.js';
 
 export async function getPublicOffers({ category = 'all', searchQuery = '', sortBy = 'newest' } = {}) {
+  try {
+    // Primary: Try fetching from Promivo API (/api/offers)
+    const apiRes = await ApiService.getOffers(category, searchQuery);
+    if (apiRes && apiRes.success && Array.isArray(apiRes.data)) {
+      let offers = apiRes.data;
+
+      // Sort
+      if (sortBy === 'newest') {
+        offers.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      } else if (sortBy === 'discount') {
+        offers.sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0));
+      } else if (sortBy === 'price-asc') {
+        offers.sort((a, b) => (a.currentPrice || 0) - (b.currentPrice || 0));
+      } else if (sortBy === 'price-desc') {
+        offers.sort((a, b) => (b.currentPrice || 0) - (a.currentPrice || 0));
+      }
+
+      return offers;
+    }
+  } catch (apiErr) {
+    console.warn('API backend em nuvem indisponível localmente, buscando diretamente do Firestore SDK:', apiErr.message);
+  }
+
+  // Fallback: Client-side Firestore SDK
   try {
     const offersRef = collection(db, 'offers');
     const snapshot = await getDocs(offersRef);
@@ -26,40 +48,27 @@ export async function getPublicOffers({ category = 'all', searchQuery = '', sort
       }
     });
 
-    // Client-side filtering and sorting
     if (category && category !== 'all') {
-      offers = offers.filter(o => 
-        (o.category || '').toLowerCase() === category.toLowerCase()
-      );
+      offers = offers.filter(o => (o.category || '').toLowerCase() === category.toLowerCase());
     }
 
     if (searchQuery && searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase().trim();
       offers = offers.filter(o => 
         (o.name || '').toLowerCase().includes(q) ||
-        (o.store || '').toLowerCase().includes(q) ||
-        (o.category || '').toLowerCase().includes(q)
+        (o.store || '').toLowerCase().includes(q)
       );
     }
 
-    // Sort
     if (sortBy === 'newest') {
-      offers.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0);
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt || 0);
-        return timeB - timeA;
-      });
+      offers.sort((a, b) => (b.createdAt?.toMillis ? b.createdAt.toMillis() : 0) - (a.createdAt?.toMillis ? a.createdAt.toMillis() : 0));
     } else if (sortBy === 'discount') {
       offers.sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0));
-    } else if (sortBy === 'price-asc') {
-      offers.sort((a, b) => (a.currentPrice || 0) - (b.currentPrice || 0));
-    } else if (sortBy === 'price-desc') {
-      offers.sort((a, b) => (b.currentPrice || 0) - (a.currentPrice || 0));
     }
 
     return offers;
   } catch (error) {
-    console.error('Erro ao buscar ofertas do Firestore:', error);
+    console.error('Erro ao buscar ofertas:', error);
     return [];
   }
 }

@@ -4,28 +4,50 @@ import {
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+
+let currentUserProfile = null;
+
+export function getCurrentUserProfile() {
+  return currentUserProfile;
+}
 
 /**
- * Sign in user and verify authorization status.
+ * Login user and strictly validate Firestore document & active state.
  */
 export async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Check authorization in Firestore 'users' collection
-    const isAuthorized = await checkUserAuthorized(user.uid, user.email);
+    // Fetch user document from Firestore 'users' collection
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
 
-    if (!isAuthorized) {
-      // Force sign out unauthorized users
+    if (!userDoc.exists()) {
       await signOut(auth);
-      throw new Error('Acesso bloqueado: Este e-mail não possui autorização para acessar a ferramenta de afiliados.');
+      currentUserProfile = null;
+      throw new Error('Acesso negado: Seu cadastro de usuário não foi localizado no sistema.');
     }
 
-    return user;
+    const userData = userDoc.data();
+
+    // Check active status
+    if (userData.active === false) {
+      await signOut(auth);
+      currentUserProfile = null;
+      throw new Error('Acesso bloqueado: Sua conta de usuário está desativada.');
+    }
+
+    // Update lastLogin timestamp
+    await updateDoc(userDocRef, {
+      lastLogin: serverTimestamp()
+    }).catch(() => {});
+
+    currentUserProfile = { uid: user.uid, ...userData };
+    return { user, profile: currentUserProfile };
   } catch (error) {
-    console.error('Erro de autenticação:', error);
+    console.error('Erro de autenticação/autorização:', error);
     if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
       throw new Error('E-mail ou senha incorretos.');
     }
@@ -33,54 +55,48 @@ export async function loginUser(email, password) {
   }
 }
 
-/**
- * Verify if UID or email is marked authorized in Cloud Firestore.
- */
-export async function checkUserAuthorized(uid, email) {
-  try {
-    const userDocRef = doc(db, 'users', uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      return data.authorized === true;
-    }
-
-    // If user is first-time logging in with valid Auth credential, we check if they are authorized
-    // If no document exists, create one with default authorized: true for admin setup or false
-    // To strictly block non-authorized emails, default is true only if configured or check email whitelist
-    const isAllowed = true; // Authorized by default for credentials created in Auth console
-    
-    await setDoc(userDocRef, {
-      email: email,
-      authorized: isAllowed,
-      role: 'affiliate',
-      lastLogin: serverTimestamp()
-    }, { merge: true });
-
-    return isAllowed;
-  } catch (err) {
-    console.warn('Erro ao consultar regras de usuário, liberando credencial válida do Auth:', err);
-    return true; // Fallback for authenticated firebase user
-  }
-}
-
 export async function logoutUser() {
+  currentUserProfile = null;
   await signOut(auth);
 }
 
+/**
+ * Auth state listener with Firestore validation guard.
+ */
 export function subscribeToAuth(callback) {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
-      const authorized = await checkUserAuthorized(user.uid, user.email);
-      if (!authorized) {
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+          await signOut(auth);
+          currentUserProfile = null;
+          callback(null, null);
+          return;
+        }
+
+        const userData = userDoc.data();
+
+        if (userData.active === false) {
+          await signOut(auth);
+          currentUserProfile = null;
+          callback(null, null);
+          return;
+        }
+
+        currentUserProfile = { uid: user.uid, ...userData };
+        callback(user, currentUserProfile);
+      } catch (err) {
+        console.error('Erro ao verificar permissões do usuário:', err);
         await signOut(auth);
-        callback(null);
-        return;
+        currentUserProfile = null;
+        callback(null, null);
       }
-      callback(user);
     } else {
-      callback(null);
+      currentUserProfile = null;
+      callback(null, null);
     }
   });
 }

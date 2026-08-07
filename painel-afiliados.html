@@ -83,9 +83,34 @@
         </div>
       </div>
 
+      <!-- Navigation Tabs Bar -->
+      <div id="navigationTabsBar" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <button id="btnTabTool" class="category-chip active">⚡ Ferramenta & Ofertas</button>
+        <button id="btnTabUsers" class="category-chip" style="display: none;">👥 Gestão de Usuários (Admin)</button>
+        <button id="btnTabLogs" class="category-chip" style="display: none;">📋 Logs de Auditoria</button>
+      </div>
+
+      <!-- Tab Content 1: Affiliate Tool & Offers -->
+      <div id="tabContentTool">
+
       <div class="panel-grid">
         <!-- Left Column: Offer Form -->
         <div>
+          <div class="panel-card" style="margin-bottom: 1.5rem; background: var(--bg-surface-hover);">
+            <h3 class="panel-card-title" style="font-size: 1rem; color: var(--brand-primary);">
+              🔍 Importar Produto via API Promivo (Mercado Livre)
+            </h3>
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="apiSearchInput" class="form-control" placeholder="Digite um produto (ex: Whey Protein, iPhone, Fone)" />
+                <button type="button" id="btnApiSearch" class="btn btn-secondary btn-sm">Buscar</button>
+              </div>
+            </div>
+            <div id="apiSearchResults" style="display: none; max-height: 200px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; margin-top: 0.5rem;">
+              <!-- Results rendered dynamically -->
+            </div>
+          </div>
+
           <div class="panel-card">
             <h3 class="panel-card-title">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2.5">
@@ -187,6 +212,95 @@
           </table>
         </div>
       </section>
+      </div><!-- End tabContentTool -->
+
+      <!-- Tab Content 2: User Management (Admin Only) -->
+      <div id="tabContentUsers" style="display: none;">
+        <div class="panel-grid" style="margin-bottom: 2rem;">
+          <div class="panel-card">
+            <h3 class="panel-card-title">➕ Cadastrar Novo Usuário (Admin SDK)</h3>
+            <form id="createUserForm">
+              <div class="form-group">
+                <label class="form-label" for="newUserName">Nome Completo *</label>
+                <input type="text" id="newUserName" class="form-control" placeholder="Ex: João da Silva" required />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="newUserEmail">E-mail *</label>
+                  <input type="email" id="newUserEmail" class="form-control" placeholder="usuario@promivo.com" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="newUserPassword">Senha Inicial *</label>
+                  <input type="password" id="newUserPassword" class="form-control" placeholder="••••••••" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newUserRole">Perfil de Acesso (Role) *</label>
+                <select id="newUserRole" class="form-control" required>
+                  <option value="affiliate">Affiliate (Divulgador de Ofertas)</option>
+                  <option value="manager">Manager (Gerente de Conteúdo)</option>
+                  <option value="admin">Admin (Administrador)</option>
+                  <option value="owner">Owner (Proprietário)</option>
+                  <option value="viewer">Viewer (Apenas Leitura)</option>
+                </select>
+              </div>
+              <button type="submit" id="btnCreateUserSubmit" class="btn btn-primary" style="width: 100%;">
+                Criar Usuário no Sistema
+              </button>
+            </form>
+          </div>
+          
+          <div class="panel-card">
+            <h3 class="panel-card-title">ℹ️ Regras de Perfis & Hierarquia</h3>
+            <ul style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; padding-left: 1.25rem;">
+              <li><strong>Owner:</strong> Proprietário do sistema. Acesso total. Protegido contra alterações por Admin.</li>
+              <li><strong>Admin:</strong> Gerencia usuários comuns, senhas, status e ofertas. Não altera nem cria Owners.</li>
+              <li><strong>Manager:</strong> Gerencia ofertas, destaques e categorias. Não cria nem exclui usuários.</li>
+              <li><strong>Affiliate:</strong> Acessa a ferramenta e gerencia apenas suas próprias ofertas.</li>
+              <li><strong>Viewer:</strong> Visualização de conteúdos.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;">Usuários Cadastrados</h2>
+        <div class="panel-card" style="padding: 0; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); background-color: var(--bg-surface-hover); color: var(--text-secondary);">
+                <th style="padding: 0.85rem 1rem;">Nome</th>
+                <th style="padding: 0.85rem 1rem;">E-mail</th>
+                <th style="padding: 0.85rem 1rem;">Perfil</th>
+                <th style="padding: 0.85rem 1rem;">Status</th>
+                <th style="padding: 0.85rem 1rem; text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="panelUsersTable">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: Audit Logs -->
+      <div id="tabContentLogs" style="display: none;">
+        <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;">Histórico de Auditoria do Sistema</h2>
+        <div class="panel-card" style="padding: 0; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); background-color: var(--bg-surface-hover); color: var(--text-secondary);">
+                <th style="padding: 0.85rem 1rem;">Data/Hora</th>
+                <th style="padding: 0.85rem 1rem;">Usuário</th>
+                <th style="padding: 0.85rem 1rem;">Ação</th>
+                <th style="padding: 0.85rem 1rem;">IP</th>
+                <th style="padding: 0.85rem 1rem;">Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="panelLogsTable">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
