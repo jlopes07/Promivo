@@ -3,6 +3,10 @@
     {
       "source": "/painel-afiliados",
       "destination": "/painel-afiliados.html"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     }
   ]
 }
