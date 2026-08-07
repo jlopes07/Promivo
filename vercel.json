@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/painel-afiliados",
+      "destination": "/painel-afiliados.html"
+    }
+  ]
+}
